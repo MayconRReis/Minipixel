@@ -1,0 +1,6 @@
+{
+  "name": "MiniVida IA",
+  "description": "Um jogo de simulação de vida onde você cuida de um pequeno personagem movido por IA, conversa com ele e o ensina sobre o mundo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-pixel: "VT323", monospace;
+  --font-retro: "Press Start 2P", system-ui;
+}
+
+@layer base {
+  body {
+    @apply font-pixel antialiased text-lg;
+    background-color: #1a1a2e;
+  }
+}
+
+@layer components {
+  .pixel-border {
+    border-image-source: url("data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8' ?><svg version='1.1' width='5' height='5' xmlns='http://www.w3.org/2000/svg'><path d='M2 1 h1 v1 h-1 z m1 1 h1 v1 h-1 z m-1 1 h1 v1 h-1 z m-1 -1 h1 v1 h-1 z' fill='rgba(0,0,0,0.3)' /></svg>");
+    border-image-slice: 2;
+    border-image-repeat: stretch;
+    border-width: 4px;
+    border-style: solid;
+  }
+
+  .nes-container {
+    @apply bg-black/40 backdrop-blur-sm border-2 border-white/20 rounded-lg p-4;
+    box-shadow: 0 4px 0 0 rgba(0,0,0,0.5);
+  }
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+@keyframes grass-sway {
+  0%, 100% { transform: skewX(-5deg); }
+  50% { transform: skewX(5deg); }
+}
+
+.grass {
+  animation: grass-sway 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.floating {
+  animation: float 4s ease-in-out infinite;
+}
