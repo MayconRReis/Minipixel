@@ -1,17 +1,17 @@
-import { Status } from "../types";
-import { Utensils, Droplet, Zap, Heart, GraduationCap } from "lucide-react";
+import { MiniStatus } from "../types/character";
+import { Utensils, Droplet, Zap, Heart, GraduationCap, Brain } from "lucide-react";
 
 interface StatusPanelProps {
-  status: Status;
+  status: MiniStatus;
 }
 
 export default function StatusPanel({ status }: StatusPanelProps) {
   const bars = [
-    { label: "Fome", value: status.fome, icon: <Utensils size={14} />, color: "bg-[#e74c3c]" },
-    { label: "Sede", value: status.sede, icon: <Droplet size={14} />, color: "bg-[#3498db]" },
-    { label: "Energia", value: status.energia, icon: <Zap size={14} />, color: "bg-[#f1c40f]" },
-    { label: "Felicidade", value: status.felicidade, icon: <Heart size={14} />, color: "bg-[#e84393]" },
-    { label: "Conhecimento", value: status.conhecimento, icon: <GraduationCap size={14} />, color: "bg-[#9b59b6]" },
+    { label: "FOME", value: status.fome, icon: <Utensils size={14} />, color: "bg-[#e74c3c]" },
+    { label: "SEDE", value: status.sede, icon: <Droplet size={14} />, color: "bg-[#3498db]" },
+    { label: "ENERGIA", value: status.energia, icon: <Zap size={14} />, color: "bg-[#f1c40f]" },
+    { label: "HUMOR", value: status.felicidade, icon: <Heart size={14} />, color: "bg-[#e84393]" },
+    { label: "CORE", value: status.conhecimento, icon: <Brain size={14} />, color: "bg-[#9b59b6]" },
   ];
 
   return (

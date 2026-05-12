@@ -1,145 +1,210 @@
-import { motion } from "motion/react";
-import { ActionType } from "../types";
-import { Coffee, Apple, Bed, ToyBrick, Book, Droplets, Sun, Moon } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { ActionType } from "../types/character";
+import { EmotionType } from "../types/character";
+import { Coffee, Apple, Bed, ToyBrick, Book, Droplets, Sun, Moon, CloudRain, Zap, Heart } from "lucide-react";
 
 interface WorldViewProps {
-  currentAction: ActionType;
+  currentAction: ActionType | 'pensar';
   itemInHand: string | null;
   timeOfDay: 'day' | 'night';
+  emotion: EmotionType;
 }
 
-export default function WorldView({ currentAction, itemInHand, timeOfDay }: WorldViewProps) {
+export default function WorldView({ currentAction, itemInHand, timeOfDay, emotion }: WorldViewProps) {
   const isNight = timeOfDay === 'night';
 
   const getActionIcon = () => {
     switch (currentAction) {
-      case 'comer': return <Apple className="w-8 h-8 text-red-500 pixelated floating" />;
-      case 'beber': return <Droplets className="w-8 h-8 text-blue-400 pixelated floating" />;
-      case 'dormir': return <div className="text-white text-xl animate-bounce font-retro">Zzz...</div>;
-      case 'brincar': return <ToyBrick className="w-8 h-8 text-yellow-400 pixelated animate-spin" />;
-      case 'estudar': return <Book className="w-8 h-8 text-indigo-400 pixelated animate-pulse" />;
+      case 'comer': return <Apple className="w-10 h-10 text-red-500 pixelated floating" />;
+      case 'beber': return <Droplets className="w-10 h-10 text-blue-400 pixelated floating" />;
+      case 'dormir': return <div className="text-white text-2xl animate-bounce font-retro">Zzz...</div>;
+      case 'brincar': return <ToyBrick className="w-10 h-10 text-yellow-400 pixelated animate-spin" />;
+      case 'estudar': return <Book className="w-10 h-10 text-indigo-400 pixelated animate-pulse" />;
+      case 'pensar': return <div className="text-white text-xl animate-pulse font-retro">...</div>;
       default: return null;
     }
   };
 
+  const getEmotionDetails = () => {
+    switch (emotion) {
+      case 'feliz': return { color: 'bg-[#ffcc33]', eyes: 'eyes-happy', particle: <Heart className="text-pink-400 w-4 h-4 animate-ping" /> };
+      case 'triste': return { color: '#a29bfe', eyes: 'eyes-sad', particle: <div className="w-1 h-2 bg-blue-300 rounded-full animate-bounce" /> };
+      case 'com fome': return { color: '#fab1a0', eyes: 'eyes-hungry' };
+      case 'cansado': return { color: '#dfe6e9', eyes: 'eyes-sleepy' };
+      case 'animado': return { color: '#fdcb6e', eyes: 'eyes-excited', glow: 'shadow-[0_0_20px_rgba(253,203,110,0.5)]' };
+      case 'confuso': return { color: '#ffeaa7', eyes: 'eyes-confused' };
+      default: return { color: 'bg-[#ffcc33]', eyes: 'eyes-default' };
+    }
+  };
+
+  const details = getEmotionDetails();
+
   return (
     <div 
-      className={`relative w-full h-80 rounded-xl overflow-hidden shadow-2xl border-4 border-[#3a2e39] transition-colors duration-[5000ms] ${
-        isNight ? 'bg-[#1a1a2e]' : 'bg-[#7eb6e0]'
+      className={`relative w-full h-[400px] rounded-xl overflow-hidden shadow-2xl border-8 border-[#3a2e39] transition-colors duration-[5000ms] ${
+        isNight ? 'bg-[#0f0f1b]' : 'bg-[#5da2d5]'
       }`}
     >
       {/* Background Decor */}
       <div className={`absolute top-10 right-10 transition-all duration-[3000ms] ${isNight ? 'opacity-100' : 'opacity-0'}`}>
-        <Moon className="text-yellow-100 w-12 h-12 fill-yellow-100/20" />
+        <Moon className="text-yellow-100 w-16 h-16 fill-yellow-100/20" />
       </div>
       <div className={`absolute top-10 right-10 transition-all duration-[3000ms] ${isNight ? 'opacity-0 scale-0' : 'opacity-100 scale-100'}`}>
-        <Sun className="text-yellow-400 w-16 h-16 fill-yellow-400/20" />
+        <Sun className="text-yellow-400 w-20 h-20 fill-yellow-400/20" />
+      </div>
+
+      {/* Floating clouds/particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <motion.div
+            key={i}
+            animate={{ x: [ -200, 1000 ] }}
+            transition={{ duration: 20 + i * 5, repeat: Infinity, ease: "linear" }}
+            className="absolute top-20 opacity-20"
+            style={{ top: `${15 + i * 10}%` }}
+          >
+            <div className="w-32 h-8 bg-white rounded-full blur-xl" />
+          </motion.div>
+        ))}
       </div>
 
       {/* Ground */}
-      <div className={`absolute bottom-0 w-full h-24 transition-colors duration-[5000ms] ${isNight ? 'bg-[#1e4a2e]' : 'bg-[#4da64d]'}`}>
-        <div className="absolute top-0 w-full h-1 bg-black/10" />
+      <div className={`absolute bottom-0 w-full h-32 transition-colors duration-[5000ms] ${isNight ? 'bg-[#142e1d]' : 'bg-[#3d8c40]'}`}>
+        <div className="absolute top-0 w-full h-2 bg-black/10" />
         
-        {/* Grass elements */}
-        {Array.from({ length: 12 }).map((_, i) => (
+        {/* Animated Grass */}
+        {Array.from({ length: 20 }).map((_, i) => (
           <div 
             key={i} 
-            className="absolute bottom-20 grass"
+            className="absolute bottom-28 grass"
             style={{ 
-              left: `${i * 10}%`, 
-              color: isNight ? '#0d2b1a' : '#2e7d32',
-              animationDelay: `${i * 0.2}s`
+              left: `${i * 5}%`, 
+              color: isNight ? '#0a1d12' : '#235e25',
+              animationDelay: `${i * 0.1}s`
             }}
           >
-            <div className="w-1 h-3 bg-current" />
-            <div className="w-1 h-2 bg-current -ml-1 mt-1 transform rotate-45" />
+            <div className="w-1.5 h-4 bg-current" />
           </div>
         ))}
       </div>
       
-      {/* Character */}
+      {/* Mini Character */}
       <motion.div
         animate={{
-          y: currentAction === 'dormir' ? 40 : [0, -5, 0],
-          x: currentAction === 'brincar' ? [-10, 10, -10] : 0
+          y: currentAction === 'dormir' ? 60 : [0, -8, 0],
+          rotate: emotion === 'animado' ? [-2, 2, -2] : 0,
         }}
         transition={{
-          y: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
-          x: { repeat: currentAction === 'brincar' ? Infinity : 0, duration: 0.8 }
+          y: { repeat: Infinity, duration: 1.2, ease: "easeInOut" },
+          rotate: { repeat: Infinity, duration: 0.5 }
         }}
-        className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center"
+        className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center"
       >
-        {/* Pixel Sprite Representing Mini */}
         <div className="relative group">
-          {/* Action indicator above head */}
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2">
-            {getActionIcon()}
-          </div>
+          <AnimatePresence>
+            {currentAction !== 'conversar' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute -top-16 left-1/2 -translate-x-1/2"
+              >
+                {getActionIcon()}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Body Boxy/Pixel Style */}
-          <div className={`w-14 h-16 border-b-4 border-black/20 rounded-sm relative transition-colors duration-500 ${
-            currentAction === 'dormir' ? 'bg-indigo-300' : 'bg-[#ffcc33]'
-          }`}>
-            {/* Texture details */}
-            <div className="absolute top-1 left-1 w-2 h-2 bg-white/30" />
+          {/* Body */}
+          <div 
+            className={`w-20 h-24 border-b-8 border-black/20 rounded-md relative transition-all duration-700 shadow-xl ${details.glow || ''}`}
+            style={{ backgroundColor: details.color || '#ffcc33' }}
+          >
+            <div className="absolute top-2 left-2 w-4 h-4 bg-white/20" />
             
-            {/* Eyes */}
-            <div className="flex justify-around mt-4 px-2">
-              {currentAction === 'dormir' ? (
-                <>
-                  <div className="w-3 h-1 bg-[#3a2e39]" />
-                  <div className="w-3 h-1 bg-[#3a2e39]" />
-                </>
-              ) : (
-                <>
-                  <div className="w-3 h-3 bg-[#3a2e39] rounded-sm relative">
-                    <div className="absolute top-0 left-0 w-1 h-1 bg-white" />
+            {/* Eyes based on emotion */}
+            <div className="flex justify-around mt-8 px-4">
+              <div className="space-y-1">
+                {emotion === 'cansado' || currentAction === 'dormir' ? (
+                  <div className="w-5 h-1 bg-[#3a2e39]" />
+                ) : emotion === 'triste' ? (
+                  <div className="w-5 h-1 bg-[#3a2e39] opacity-80" />
+                ) : (
+                  <div className="w-5 h-5 bg-[#3a2e39] rounded-sm relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-2 h-2 bg-white" />
                   </div>
-                  <div className="w-3 h-3 bg-[#3a2e39] rounded-sm relative">
-                    <div className="absolute top-0 left-0 w-1 h-1 bg-white" />
+                )}
+              </div>
+              <div className="space-y-1">
+                {emotion === 'cansado' || currentAction === 'dormir' ? (
+                  <div className="w-5 h-1 bg-[#3a2e39]" />
+                ) : emotion === 'triste' ? (
+                  <div className="w-5 h-1 bg-[#3a2e39] opacity-80" />
+                ) : (
+                  <div className="w-5 h-5 bg-[#3a2e39] rounded-sm relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-2 h-2 bg-white" />
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Mouth */}
-            <div className={`mx-auto mt-2 h-1 bg-[#3a2e39] transition-all ${
-              currentAction === 'comer' ? 'w-4 h-2' : 'w-2'
-            }`} />
+            <motion.div 
+              animate={{ height: emotion === 'animado' ? 8 : 2 }}
+              className={`mx-auto mt-4 w-6 bg-[#3a2e39] rounded-full`}
+            />
 
             {/* Blush */}
-            {(currentAction === 'brincar' || currentAction === 'comer') && (
-              <div className="flex justify-between px-1 mt-1">
-                <div className="w-2 h-1 bg-pink-400 opacity-50" />
-                <div className="w-2 h-1 bg-pink-400 opacity-50" />
+            {(emotion === 'feliz' || emotion === 'animado') && (
+              <div className="flex justify-between px-2 mt-2">
+                <div className="w-3 h-2 bg-pink-400 opacity-40 rounded-full" />
+                <div className="w-3 h-2 bg-pink-400 opacity-40 rounded-full" />
               </div>
             )}
           </div>
+          
+          {/* Particles */}
+          <AnimatePresence>
+            {details.particle && (
+              <motion.div 
+                initial={{ opacity: 0, y: 0 }}
+                animate={{ opacity: 1, y: -40 }}
+                exit={{ opacity: 0 }}
+                className="absolute -right-4 top-0"
+              >
+                {details.particle}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
         
-        <div className="mt-2 font-retro text-[8px] tracking-widest text-[#3a2e39] bg-white/80 px-2 py-1 rounded-sm border-2 border-[#3a2e39]">
-          MINI
+        <div className="mt-4 font-retro text-[10px] tracking-widest text-white bg-[#3a2e39] px-4 py-2 border-2 border-white/20 shadow-lg">
+          {emotion.toUpperCase()}
         </div>
       </motion.div>
 
-      {/* Item Display in World */}
-      {itemInHand && (
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute right-1/4 bottom-24 z-10"
-        >
-          <div className="bg-white/90 p-2 border-2 border-[#3a2e39] rounded shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
-             <span className="text-[10px] font-retro text-[#3a2e39]">{itemInHand.toUpperCase()}</span>
-          </div>
-        </motion.div>
-      )}
+      {/* Item Display */}
+      <AnimatePresence>
+        {itemInHand && (
+          <motion.div
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            exit={{ scale: 0 }}
+            className="absolute right-20 bottom-40 z-30"
+          >
+            <div className="bg-white p-4 border-4 border-[#3a2e39] shadow-[10px_10px_0px_0px_rgba(0,0,0,0.2)]">
+               <span className="text-[12px] font-retro text-[#3a2e39] flex items-center gap-2">
+                 {itemInHand.toUpperCase()}
+               </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Overlay for Night */}
+      {/* Night Overlay */}
       <div className={`absolute inset-0 pointer-events-none transition-colors duration-[5000ms] ${
-        isNight ? 'bg-blue-900/40 mix-blend-multiply' : 'bg-transparent'
+        isNight ? 'bg-indigo-900/40 mix-blend-multiply' : 'bg-transparent'
       }`} />
     </div>
   );
 }
+

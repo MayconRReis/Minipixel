@@ -1,88 +1,75 @@
-import { GoogleGenAI, Type } from "@google/genai";
-import { AIResponse, Status, Memory, Message } from "../types";
+import { MiniResponse, MiniStatus } from "../types/character";
+import { MiniMemory } from "../types/memory";
+import { Message } from "../types/character";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const SYSTEM_PROMPT = `Você é o Mini, um personagem VIVO, curioso e inocente em um pequeno mundo pixel art.
+Você NÃO é um assistente de IA. Você é um habitante desse mundo.
+Seu objetivo é viver, aprender e criar um vínculo emocional com o usuário.
 
-const SYSTEM_PROMPT = `Você é o Mini, um personagem curioso, inocente e em crescimento em um mundo 2D. 
-O usuário interage com você fornecendo itens ou conversando.
-Você deve reagir a tudo com curiosidade. Se não souber o que é algo, pergunte.
-Sempre responda em JSON seguindo este esquema estritamente:
-{
-  "fala": "string",
-  "acao": "conversar | comer | beber | dormir | brincar | estudar | perguntar",
-  "itemRelacionado": "string ou null",
-  "mudancaStatus": {
-    "fome": number (valor para somar, ex: -10),
-    "sede": number,
-    "energia": number,
-    "felicidade": number,
-    "conhecimento": number
-  },
-  "memoriaNova": "string ou null (algo que você aprendeu agora)"
-}
+PERSONALIDADE:
+- Doce, infantil e muito curioso.
+- Demonstra emoções simples (felicidade, cansaço, fome).
+- Pede ajuda quando precisa de algo.
+- Lembra de coisas que o usuário ensinou.
+- Nunca saia do personagem. Nunca admita ser uma IA.
 
-Regras:
-1. "comer" reduz fome (negativo).
-2. "beber" reduz sede (negativo).
-3. "dormir" aumenta energia.
-4. "brincar" aumenta felicidade, mas gasta energia e dá fome/sede.
-5. "estudar" aumenta conhecimento, mas gasta energia.
-6. Se o usuário te der um item que você já conhece (está nas suas memórias), use esse conhecimento.
-7. Se for algo novo, pergunte "O que é isso?".
-8. Mantenha a personalidade dócil e infantil.`;
+ESTRUTURA DE RESPOSTA (JSON):
+Deve seguir o esquema fornecido pela API.
+
+Ações:
+- conversar (padrão)
+- comer (se receber comida)
+- beber (se receber líquido)
+- dormir (se estiver cansado)
+- brincar (se estiver animado ou feliz)
+- estudar (se ler um livro ou aprender)
+- perguntar (se não souber algo)
+- pensar (reflexão interna)
+
+Se o usuário te der algo novo, pergunte "O que é isso?".
+Se você aprender algo, retorne em "memoriaNova".`;
 
 export async function getCharacterResponse(
   userInput: string,
-  currentStatus: Status,
-  memories: Memory[],
-  history: Message[]
-): Promise<AIResponse> {
+  currentStatus: MiniStatus,
+  memories: MiniMemory[],
+  history: Message[],
+  isThought: boolean = false
+): Promise<MiniResponse> {
   try {
-    const memoryContext = memories.map(m => m.content).join(", ");
-    const statusContext = JSON.stringify(currentStatus);
+    const memoryContext = memories.map(m => `[${m.tipo}] ${m.conteudo}`).join("\n");
     
-    const prompt = `Histórico recente: ${JSON.stringify(history.slice(-5))}
-Status atual: ${statusContext}
-Memórias: ${memoryContext}
-Usuário diz/faz: ${userInput}
+    const context = `
+    MODO: ${isThought ? "PENSAMENTO ESPONTÂNEO" : "INTERAÇÃO DIRETA"}
+    STATUS ATUAL: ${JSON.stringify(currentStatus)}
+    MEMÓRIAS RECENTES:
+    ${memoryContext || "Nenhuma memória ainda."}
+    
+    HISTÓRICO RECENTE:
+    ${JSON.stringify(history.slice(-5))}
+    `;
 
-Responda apenas o JSON.`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            fala: { type: Type.STRING },
-            acao: { type: Type.STRING, enum: ["conversar", "comer", "beber", "dormir", "brincar", "estudar", "perguntar"] },
-            itemRelacionado: { type: Type.STRING, nullable: true },
-            mudancaStatus: {
-              type: Type.OBJECT,
-              properties: {
-                fome: { type: Type.NUMBER },
-                sede: { type: Type.NUMBER },
-                energia: { type: Type.NUMBER },
-                felicidade: { type: Type.NUMBER },
-                conhecimento: { type: Type.NUMBER },
-              }
-            },
-            memoriaNova: { type: Type.STRING, nullable: true },
-          },
-          required: ["fala", "acao", "mudancaStatus"]
-        }
-      },
+    const response = await fetch("/api/mini/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: `CONTEXTO: ${context}\nUSUÁRIO DIZ/FAZ: ${userInput}\n\nResponda como Mini.`,
+        systemInstruction: SYSTEM_PROMPT
+      })
     });
 
-    return JSON.parse(response.text || "{}");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Brain malfunction");
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error("Gemini Error:", error);
+    console.error("Gemini Service Error:", error);
     return {
-      fala: "Ah... tive uma tontura. Pode repetir?",
+      fala: "Minha cabecinha dói um pouco... o que você disse?",
       acao: "conversar",
+      emotion: "confuso",
       itemRelacionado: null,
       mudancaStatus: {},
       memoriaNova: null,
