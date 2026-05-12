@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
-import { Message } from "../types/character";
+import { Message } from "../brain/brainTypes";
 import { Send, Loader2 } from "lucide-react";
 
 interface ChatPanelProps {

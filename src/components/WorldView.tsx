@@ -1,13 +1,12 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ActionType } from "../types/character";
-import { EmotionType } from "../types/character";
-import { Coffee, Apple, Bed, ToyBrick, Book, Droplets, Sun, Moon, CloudRain, Zap, Heart } from "lucide-react";
+import { BrainEmotion, BrainIntent } from "../brain/brainTypes";
+import { Coffee, Apple, Bed, ToyBrick, Book, Droplets, Sun, Moon, Zap, Heart } from "lucide-react";
 
 interface WorldViewProps {
-  currentAction: ActionType | 'pensar';
+  currentAction: BrainIntent | 'idle';
   itemInHand: string | null;
   timeOfDay: 'day' | 'night';
-  emotion: EmotionType;
+  emotion: BrainEmotion;
 }
 
 export default function WorldView({ currentAction, itemInHand, timeOfDay, emotion }: WorldViewProps) {
@@ -15,25 +14,24 @@ export default function WorldView({ currentAction, itemInHand, timeOfDay, emotio
 
   const getActionIcon = () => {
     switch (currentAction) {
-      case 'comer': return <Apple className="w-10 h-10 text-red-500 pixelated floating" />;
-      case 'beber': return <Droplets className="w-10 h-10 text-blue-400 pixelated floating" />;
-      case 'dormir': return <div className="text-white text-2xl animate-bounce font-retro">Zzz...</div>;
-      case 'brincar': return <ToyBrick className="w-10 h-10 text-yellow-400 pixelated animate-spin" />;
-      case 'estudar': return <Book className="w-10 h-10 text-indigo-400 pixelated animate-pulse" />;
-      case 'pensar': return <div className="text-white text-xl animate-pulse font-retro">...</div>;
+      case 'eat': return <Apple className="w-10 h-10 text-red-500 pixelated floating" />;
+      case 'drink': return <Droplets className="w-10 h-10 text-blue-400 pixelated floating" />;
+      case 'sleep': return <div className="text-white text-2xl animate-bounce font-retro">Zzz...</div>;
+      case 'play': return <ToyBrick className="w-10 h-10 text-yellow-400 pixelated animate-spin" />;
+      case 'study': return <Book className="w-10 h-10 text-indigo-400 pixelated animate-pulse" />;
       default: return null;
     }
   };
 
   const getEmotionDetails = () => {
     switch (emotion) {
-      case 'feliz': return { color: 'bg-[#ffcc33]', eyes: 'eyes-happy', particle: <Heart className="text-pink-400 w-4 h-4 animate-ping" /> };
-      case 'triste': return { color: '#a29bfe', eyes: 'eyes-sad', particle: <div className="w-1 h-2 bg-blue-300 rounded-full animate-bounce" /> };
-      case 'com fome': return { color: '#fab1a0', eyes: 'eyes-hungry' };
-      case 'cansado': return { color: '#dfe6e9', eyes: 'eyes-sleepy' };
-      case 'animado': return { color: '#fdcb6e', eyes: 'eyes-excited', glow: 'shadow-[0_0_20px_rgba(253,203,110,0.5)]' };
-      case 'confuso': return { color: '#ffeaa7', eyes: 'eyes-confused' };
-      default: return { color: 'bg-[#ffcc33]', eyes: 'eyes-default' };
+      case 'happy': return { color: '#ffcc33', particle: <Heart className="text-pink-400 w-4 h-4 animate-ping" /> };
+      case 'sad': return { color: '#a29bfe', particle: <div className="w-1 h-2 bg-blue-300 rounded-full animate-bounce" /> };
+      case 'hungry': return { color: '#fab1a0' };
+      case 'tired': return { color: '#dfe6e9' };
+      case 'excited': return { color: '#fdcb6e', glow: 'shadow-[0_0_20px_rgba(253,203,110,0.5)]' };
+      case 'confused': return { color: '#ffeaa7' };
+      default: return { color: '#ffcc33' };
     }
   };
 
@@ -91,8 +89,8 @@ export default function WorldView({ currentAction, itemInHand, timeOfDay, emotio
       {/* Mini Character */}
       <motion.div
         animate={{
-          y: currentAction === 'dormir' ? 60 : [0, -8, 0],
-          rotate: emotion === 'animado' ? [-2, 2, -2] : 0,
+          y: currentAction === 'sleep' ? 60 : [0, -8, 0],
+          rotate: emotion === 'excited' ? [-2, 2, -2] : 0,
         }}
         transition={{
           y: { repeat: Infinity, duration: 1.2, ease: "easeInOut" },
@@ -102,7 +100,7 @@ export default function WorldView({ currentAction, itemInHand, timeOfDay, emotio
       >
         <div className="relative group">
           <AnimatePresence>
-            {currentAction !== 'conversar' && (
+            {currentAction !== 'chat' && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -124,9 +122,9 @@ export default function WorldView({ currentAction, itemInHand, timeOfDay, emotio
             {/* Eyes based on emotion */}
             <div className="flex justify-around mt-8 px-4">
               <div className="space-y-1">
-                {emotion === 'cansado' || currentAction === 'dormir' ? (
+                {emotion === 'tired' || currentAction === 'sleep' ? (
                   <div className="w-5 h-1 bg-[#3a2e39]" />
-                ) : emotion === 'triste' ? (
+                ) : emotion === 'sad' ? (
                   <div className="w-5 h-1 bg-[#3a2e39] opacity-80" />
                 ) : (
                   <div className="w-5 h-5 bg-[#3a2e39] rounded-sm relative overflow-hidden">
@@ -135,9 +133,9 @@ export default function WorldView({ currentAction, itemInHand, timeOfDay, emotio
                 )}
               </div>
               <div className="space-y-1">
-                {emotion === 'cansado' || currentAction === 'dormir' ? (
+                {emotion === 'tired' || currentAction === 'sleep' ? (
                   <div className="w-5 h-1 bg-[#3a2e39]" />
-                ) : emotion === 'triste' ? (
+                ) : emotion === 'sad' ? (
                   <div className="w-5 h-1 bg-[#3a2e39] opacity-80" />
                 ) : (
                   <div className="w-5 h-5 bg-[#3a2e39] rounded-sm relative overflow-hidden">
@@ -149,12 +147,12 @@ export default function WorldView({ currentAction, itemInHand, timeOfDay, emotio
 
             {/* Mouth */}
             <motion.div 
-              animate={{ height: emotion === 'animado' ? 8 : 2 }}
+              animate={{ height: emotion === 'excited' ? 8 : 2 }}
               className={`mx-auto mt-4 w-6 bg-[#3a2e39] rounded-full`}
             />
 
             {/* Blush */}
-            {(emotion === 'feliz' || emotion === 'animado') && (
+            {(emotion === 'happy' || emotion === 'excited') && (
               <div className="flex justify-between px-2 mt-2">
                 <div className="w-3 h-2 bg-pink-400 opacity-40 rounded-full" />
                 <div className="w-3 h-2 bg-pink-400 opacity-40 rounded-full" />

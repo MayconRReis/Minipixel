@@ -1,22 +1,22 @@
-import { MiniStatus } from "../types/character";
-import { Utensils, Droplet, Zap, Heart, GraduationCap, Brain } from "lucide-react";
+import { BrainStatus } from "../brain/brainTypes";
+import { Utensils, Droplet, Zap, Heart, Brain } from "lucide-react";
 
 interface StatusPanelProps {
-  status: MiniStatus;
+  status: BrainStatus;
 }
 
 export default function StatusPanel({ status }: StatusPanelProps) {
   const bars = [
-    { label: "FOME", value: status.fome, icon: <Utensils size={14} />, color: "bg-[#e74c3c]" },
-    { label: "SEDE", value: status.sede, icon: <Droplet size={14} />, color: "bg-[#3498db]" },
-    { label: "ENERGIA", value: status.energia, icon: <Zap size={14} />, color: "bg-[#f1c40f]" },
-    { label: "HUMOR", value: status.felicidade, icon: <Heart size={14} />, color: "bg-[#e84393]" },
-    { label: "CORE", value: status.conhecimento, icon: <Brain size={14} />, color: "bg-[#9b59b6]" },
+    { label: "HUNGER", value: status.hunger, icon: <Utensils size={14} />, color: "bg-[#e74c3c]" },
+    { label: "THIRST", value: status.thirst, icon: <Droplet size={14} />, color: "bg-[#3498db]" },
+    { label: "ENERGY", value: status.energy, icon: <Zap size={14} />, color: "bg-[#f1c40f]" },
+    { label: "MOOD", value: status.mood, icon: <Heart size={14} />, color: "bg-[#e84393]" },
+    { label: "CORE", value: status.core, icon: <Brain size={14} />, color: "bg-[#9b59b6]" },
   ];
 
   return (
     <div className="bg-[#2c3e50]/90 backdrop-blur-md p-5 rounded-lg border-4 border-[#34495e] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] w-full md:w-72">
-      <h3 className="text-[10px] font-retro text-white tracking-widest mb-6 border-b-2 border-white/10 pb-2">STATUS.DATA</h3>
+      <h3 className="text-[10px] font-retro text-white tracking-widest mb-6 border-b-2 border-white/10 pb-2">BRAIN_SYSTEM.DATA</h3>
       <div className="space-y-4">
         {bars.map((bar) => (
           <div key={bar.label} className="space-y-2">
@@ -28,7 +28,6 @@ export default function StatusPanel({ status }: StatusPanelProps) {
               <span className="text-white">{Math.round(bar.value)}%</span>
             </div>
             
-            {/* Custom Pixel Bar */}
             <div className="w-full h-4 bg-black/40 border-2 border-[#34495e] flex items-center p-[2px]">
               <div
                 className={`h-full ${bar.color} transition-all duration-700 relative`}
