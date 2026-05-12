@@ -16,18 +16,23 @@ async function startServer() {
 
   // API Routes
   app.post("/api/mini/chat", async (req, res) => {
+    console.log(`[MiniBrain] Request received: ${new Date().toISOString()}`);
     try {
       const { prompt, systemInstruction } = req.body;
 
       if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "GEMINI_API_KEY not configured" });
+        console.error("[MiniBrain] CRITICAL: GEMINI_API_KEY environment variable is missing.");
+        return res.status(500).json({ 
+          error: "GEMINI_API_KEY not configured on server. Please set it in the Settings menu." 
+        });
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          systemInstruction,
+      console.log("[MiniBrain] Communicating with Gemini...");
+      const model = ai.getGenerativeModel({ model: "gemini-3-flash-preview" });
+      
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -58,13 +63,20 @@ async function startServer() {
             },
             required: ["fala", "acao", "emotion", "mudancaStatus"]
           }
-        }
+        },
+        systemInstruction: { role: "system", parts: [{ text: systemInstruction }] }
       });
 
-      res.json(JSON.parse(response.text || "{}"));
-    } catch (error) {
-      console.error("Backend Gemini Error:", error);
-      res.status(500).json({ error: "Failed to communicate with Mini's brain" });
+      const response = result.response;
+      const text = response.text();
+      console.log("[MiniBrain] Gemini responded successfully.");
+      res.json(JSON.parse(text || "{}"));
+    } catch (error: any) {
+      console.error("[MiniBrain] Gemini Error Details:", error);
+      res.status(500).json({ 
+        error: "Failed to communicate with Mini's brain",
+        details: error.message || String(error)
+      });
     }
   });
 

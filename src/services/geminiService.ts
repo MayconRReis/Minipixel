@@ -49,6 +49,7 @@ export async function getCharacterResponse(
     ${JSON.stringify(history.slice(-5))}
     `;
 
+    console.log(`[Frontend] Sending request to Mini's brain... (Mode: ${isThought ? "Thought" : "Direct"})`);
     const response = await fetch("/api/mini/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -58,16 +59,22 @@ export async function getCharacterResponse(
       })
     });
 
+    console.log(`[Frontend] Brain response status: ${response.status} ${response.statusText}`);
+
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Brain malfunction");
+      console.error("[Frontend] Brain Error Received:", errorData);
+      throw new Error(errorData.error || errorData.details || "Brain malfunction");
     }
 
-    return await response.json();
-  } catch (error) {
-    console.error("Gemini Service Error:", error);
+    const data = await response.json();
+    console.log("[Frontend] Brain responded successfully.");
+    return data;
+  } catch (error: any) {
+    console.error("[Frontend] Gemini Service Error:", error);
+    // Return a structured error response that the UI can detect
     return {
-      fala: "Minha cabecinha dói um pouco... o que você disse?",
+      fala: `[ERRO DE CONEXÃO]: ${error.message || "Malfuncionamento no cérebro."} Por favor, verifique se a GEMINI_API_KEY está configurada no menu Settings.`,
       acao: "conversar",
       emotion: "confuso",
       itemRelacionado: null,

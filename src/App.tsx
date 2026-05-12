@@ -44,6 +44,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   const lastInteractionRef = useRef<number>(Date.now());
+  const lastErrorTimeRef = useRef<number>(0);
 
   // Persistence
   useEffect(() => {
@@ -71,16 +72,30 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(async () => {
       const timeSinceLastInteraction = Date.now() - lastInteractionRef.current;
+      const timeSinceLastError = Date.now() - lastErrorTimeRef.current;
       
-      // If user inactive for 30 seconds
-      if (timeSinceLastInteraction > 30000 && !isLoading) {
+      // If user inactive for 30 seconds AND no errors in last 60 seconds
+      if (timeSinceLastInteraction > 30000 && timeSinceLastError > 60000 && !isLoading) {
+        console.log("[ThoughtSystem] Generating spontaneous thought...");
         setIsLoading(true);
-        const thought = await generateSpontaneousThought(status, memories, messages);
-        if (thought) {
-          processResponse(thought);
+        try {
+          const thought = await generateSpontaneousThought(status, memories, messages);
+          if (thought) {
+            if (thought.fala.includes("[ERRO DE CONEXÃO]")) {
+              console.warn("[ThoughtSystem] Thought failed due to connection error.");
+              lastErrorTimeRef.current = Date.now();
+              setError("Cérebro do Mini desconectado. Verifique a API Key.");
+            } else {
+              processResponse(thought);
+            }
+          }
+        } catch (e) {
+          console.error("[ThoughtSystem] Critical error:", e);
+          lastErrorTimeRef.current = Date.now();
+        } finally {
+          setIsLoading(false);
+          lastInteractionRef.current = Date.now();
         }
-        setIsLoading(false);
-        lastInteractionRef.current = Date.now();
       }
     }, 15000); // Check every 15s
 
@@ -139,9 +154,15 @@ export default function App() {
 
     try {
       const response = await getCharacterResponse(text, status, memories, [...messages, userMessage]);
-      processResponse(response);
-    } catch (e) {
-      setError("O Mini parece estar distraído (erro na conexão).");
+      if (response.fala.includes("[ERRO DE CONEXÃO]")) {
+        setError(response.fala);
+        lastErrorTimeRef.current = Date.now();
+      } else {
+        processResponse(response);
+      }
+    } catch (e: any) {
+      setError("Erro fatal ao conectar ao cérebro: " + (e.message || "Verifique o console."));
+      lastErrorTimeRef.current = Date.now();
     } finally {
       setIsLoading(false);
     }
@@ -156,9 +177,15 @@ export default function App() {
     try {
       const context = `RECEBI O ITEM: ${itemName}`;
       const response = await getCharacterResponse(context, status, memories, messages);
-      processResponse(response);
-    } catch (e) {
-      setError("O Mini não conseguiu ver o item (erro na conexão).");
+      if (response.fala.includes("[ERRO DE CONEXÃO]")) {
+        setError(response.fala);
+        lastErrorTimeRef.current = Date.now();
+      } else {
+        processResponse(response);
+      }
+    } catch (e: any) {
+      setError("Erro ao processar item: " + (e.message || "Verifique o console."));
+      lastErrorTimeRef.current = Date.now();
     } finally {
       setIsLoading(false);
       setTimeout(() => setItemInHand(null), 3000);
